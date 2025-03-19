@@ -23,7 +23,6 @@ const Login = () => {
 
     if (user) {
       try {
-        // Store user info in localStorage for persistence
         localStorage.setItem('user', JSON.stringify(user));
         
         toast({
@@ -31,9 +30,8 @@ const Login = () => {
           description: "Logged in successfully!",
         });
 
-        // Add a small delay to ensure toast is shown before navigation
+        // Navigate based on user role with correct paths
         setTimeout(() => {
-          // Navigate based on user role
           const path = user.role === 'admin' ? '/dashboard/admin' : '/dashboard/club';
           navigate(path, { replace: true });
         }, 100);
