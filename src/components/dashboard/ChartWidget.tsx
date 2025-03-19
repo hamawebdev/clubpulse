@@ -5,7 +5,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
-  ChartLegendContent
+  ChartLegendContent,
+  type ChartConfig
 } from '@/components/ui/chart';
 import { 
   Area, 
@@ -16,8 +17,6 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
-  Legend, 
   ResponsiveContainer 
 } from 'recharts';
 import DashboardWidget from './DashboardWidget';
@@ -32,11 +31,7 @@ interface ChartWidgetProps {
   xAxisKey?: string;
   height?: number;
   className?: string;
-  config?: Record<string, { 
-    label: string; 
-    color?: string; 
-    theme?: { light: string; dark: string } 
-  }>;
+  config?: ChartConfig;
   actions?: React.ReactNode;
 }
 
@@ -52,17 +47,15 @@ const ChartWidget = ({
   actions
 }: ChartWidgetProps) => {
   
-  const chartConfig = config || 
+  // Create a default config if none is provided
+  const chartConfig: ChartConfig = config || 
     dataKeys.reduce((acc, key) => {
       acc[key] = { 
         label: key.charAt(0).toUpperCase() + key.slice(1),
         theme: { light: '#3b82f6', dark: '#60a5fa' }
       };
       return acc;
-    }, {} as Record<string, { 
-      label: string; 
-      theme: { light: string; dark: string } 
-    }>);
+    }, {} as ChartConfig);
   
   return (
     <DashboardWidget title={title} className={className} actions={actions}>
