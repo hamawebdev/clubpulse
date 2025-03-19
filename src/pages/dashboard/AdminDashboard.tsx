@@ -9,17 +9,30 @@ import {
   Search, 
   Filter, 
   Download, 
-  Clock
+  Check, 
+  X, 
+  Eye, 
+  Clock, 
+  ThumbsUp, 
+  ThumbsDown,
+  ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import MetricCard from '@/components/dashboard/MetricCard';
 import DashboardWidget from '@/components/dashboard/DashboardWidget';
 import ChartWidget from '@/components/dashboard/ChartWidget';
-import ApprovalList from '@/components/dashboard/ApprovalList';
-import { useApi } from '@/hooks/useApi';
-import { analyticsService } from '@/services/analyticsService';
 import { 
   generateChartData, 
   generateApprovalData, 
@@ -34,32 +47,12 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const tabParam = searchParams.get('tab');
   
-  // Initialize API hooks
-  const { useGet } = useApi();
-  
-  // Fetch analytics data
-  const { data: analyticsData, isLoading: isLoadingAnalytics } = useGet(
-    ['admin', 'analytics'],
-    analyticsService.getDashboardAnalytics,
-    {
-      enabled: tabParam === 'overview' || !tabParam || tabParam === 'analytics',
-      // Use mock data if API fails
-      onError: () => {
-        console.log('Using mock analytics data');
-      }
-    }
-  );
-  
-  // Mock data (would be replaced by API data in production)
-  const mockAnalyticsData = generateAnalyticsData();
   const overviewData = generateChartData();
   const approvalData = generateApprovalData(8);
   const reportData = generateReportData(10);
+  const analyticsData = generateAnalyticsData();
   const attendanceData = generateAttendanceData();
   const memberGrowthData = generateMemberGrowthData();
-  
-  // Use real data or fall back to mock data
-  const displayedAnalytics = analyticsData || mockAnalyticsData;
   
   // Set active tab based on URL param or default to 'overview'
   const activeTab = tabParam || 'overview';
@@ -92,7 +85,7 @@ const AdminDashboard = () => {
             />
             <MetricCard 
               title="Active Members" 
-              value={displayedAnalytics.memberStats.active} 
+              value={analyticsData.memberStats.active} 
               icon={<Users className="h-4 w-4" />} 
               trend={{ value: 5.2, isPositive: true }}
               description="Across all clubs"
@@ -106,7 +99,7 @@ const AdminDashboard = () => {
             />
             <MetricCard 
               title="Monthly Events" 
-              value={displayedAnalytics.eventStats.upcoming} 
+              value={analyticsData.eventStats.upcoming} 
               icon={<Calendar className="h-4 w-4" />} 
               trend={{ value: 12.5, isPositive: true }}
               description="Scheduled this month"
@@ -173,8 +166,10 @@ const AdminDashboard = () => {
                         </p>
                       </div>
                       <Button variant="outline" size="sm" className="shrink-0" onClick={() => {
-                        searchParams.set('tab', 'approvals');
-                        setSearchParams(searchParams);
+                        toast({
+                          title: "View Details",
+                          description: `Viewing ${approval.title}`
+                        });
                       }}>
                         View
                       </Button>
@@ -191,6 +186,7 @@ const AdminDashboard = () => {
                   }}
                 >
                   View All Activities
+                  <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </DashboardWidget>
@@ -230,8 +226,95 @@ const AdminDashboard = () => {
         </TabsContent>
         
         {/* Approvals Tab */}
-        <TabsContent value="approvals">
-          <ApprovalList />
+        <TabsContent value="approvals" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search approvals..."
+                className="w-full pl-8"
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={() => {
+                toast({
+                  title: "Filter Approvals",
+                  description: "Filter options opened"
+                });
+              }}>
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+            </div>
+          </div>
+          
+          <Card>
+            <CardContent className="p-0">
+              <div className="relative w-full overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Request</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Requested By</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {approvalData.map((approval) => (
+                      <TableRow key={approval.id}>
+                        <TableCell>
+                          <div className="font-medium">{approval.title}</div>
+                          <div className="text-xs text-muted-foreground">{approval.details.substring(0, 40)}...</div>
+                        </TableCell>
+                        <TableCell>{approval.type}</TableCell>
+                        <TableCell>{approval.requestedBy}</TableCell>
+                        <TableCell>{approval.requestedOn}</TableCell>
+                        <TableCell>
+                          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                            Pending
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" className="text-green-600 gap-1" onClick={() => {
+                              toast({
+                                title: "Request Approved",
+                                description: `${approval.title} has been approved`
+                              });
+                            }}>
+                              <Check className="h-4 w-4" />
+                              Approve
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-red-600 gap-1" onClick={() => {
+                              toast({
+                                title: "Request Rejected",
+                                description: `${approval.title} has been rejected`
+                              });
+                            }}>
+                              <X className="h-4 w-4" />
+                              Reject
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => {
+                              toast({
+                                title: "View Details",
+                                description: `Viewing details for ${approval.title}`
+                              });
+                            }}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         {/* Reports Tab */}
@@ -239,111 +322,199 @@ const AdminDashboard = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 type="search"
                 placeholder="Search reports..."
-                className="w-full pl-8 border border-gray-300 dark:border-gray-700 rounded-md py-2"
+                className="w-full pl-8"
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => {
+                toast({
+                  title: "Filter Reports",
+                  description: "Filter options opened"
+                });
+              }}>
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button>
+              <Button onClick={() => {
+                toast({
+                  title: "Generate Report",
+                  description: "Report generator opened"
+                });
+              }}>
                 <Download className="h-4 w-4 mr-2" />
                 Export All
               </Button>
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="p-6">
-              <h2 className="text-xl font-medium mb-4">Reports</h2>
-              <p className="text-muted-foreground">
-                Reports module is under development. This would display all submitted reports with filtering, sorting, and export options.
-              </p>
-            </div>
-          </div>
+          <Card>
+            <CardContent className="p-0">
+              <div className="relative w-full overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Report</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Submitted By</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reportData.map((report) => (
+                      <TableRow key={report.id}>
+                        <TableCell>
+                          <div className="font-medium">{report.title}</div>
+                          <div className="text-xs text-muted-foreground">#{report.id}</div>
+                        </TableCell>
+                        <TableCell>{report.type}</TableCell>
+                        <TableCell>{report.submittedBy}</TableCell>
+                        <TableCell>{report.submittedOn}</TableCell>
+                        <TableCell>
+                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            report.status === 'Approved' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                              : report.status === 'Rejected'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                : report.status === 'Draft'
+                                  ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                          }`}>
+                            {report.status}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => {
+                              toast({
+                                title: "Report Downloaded",
+                                description: `${report.title} has been downloaded`
+                              });
+                            }}>
+                              <Download className="h-4 w-4 mr-1" />
+                              Download
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "View Report",
+                                description: `Viewing ${report.title}`
+                              });
+                            }}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            
+                            {report.status === 'Submitted' && (
+                              <>
+                                <Button variant="ghost" size="icon" className="text-green-600" onClick={() => {
+                                  toast({
+                                    title: "Report Approved",
+                                    description: `${report.title} has been approved`
+                                  });
+                                }}>
+                                  <ThumbsUp className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="text-red-600" onClick={() => {
+                                  toast({
+                                    title: "Report Rejected",
+                                    description: `${report.title} has been rejected`
+                                  });
+                                }}>
+                                  <ThumbsDown className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Member Statistics</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total Members</span>
-                  <span className="font-medium">{displayedAnalytics.memberStats.total}</span>
+                  <span className="font-medium">{analyticsData.memberStats.total}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Active Members</span>
-                  <span className="font-medium">{displayedAnalytics.memberStats.active}</span>
+                  <span className="font-medium">{analyticsData.memberStats.active}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Inactive Members</span>
-                  <span className="font-medium">{displayedAnalytics.memberStats.inactive}</span>
+                  <span className="font-medium">{analyticsData.memberStats.inactive}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">New This Month</span>
-                  <span className="font-medium">{displayedAnalytics.memberStats.newThisMonth}</span>
+                  <span className="font-medium">{analyticsData.memberStats.newThisMonth}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Growth Rate</span>
-                  <span className="font-medium text-green-600">+{displayedAnalytics.memberStats.growthRate}%</span>
+                  <span className="font-medium text-green-600">+{analyticsData.memberStats.growthRate}%</span>
                 </div>
               </div>
             </Card>
             
-            <Card className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Event Statistics</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total Events</span>
-                  <span className="font-medium">{displayedAnalytics.eventStats.total}</span>
+                  <span className="font-medium">{analyticsData.eventStats.total}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Upcoming Events</span>
-                  <span className="font-medium">{displayedAnalytics.eventStats.upcoming}</span>
+                  <span className="font-medium">{analyticsData.eventStats.upcoming}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Completed Events</span>
-                  <span className="font-medium">{displayedAnalytics.eventStats.completed}</span>
+                  <span className="font-medium">{analyticsData.eventStats.completed}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Cancelled Events</span>
-                  <span className="font-medium">{displayedAnalytics.eventStats.cancelled}</span>
+                  <span className="font-medium">{analyticsData.eventStats.cancelled}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Avg. Attendance</span>
-                  <span className="font-medium">{displayedAnalytics.eventStats.averageAttendance}</span>
+                  <span className="font-medium">{analyticsData.eventStats.averageAttendance}</span>
                 </div>
               </div>
             </Card>
             
-            <Card className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Financial Statistics</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total Budget</span>
-                  <span className="font-medium">${displayedAnalytics.financialStats.totalBudget}</span>
+                  <span className="font-medium">${analyticsData.financialStats.totalBudget}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Budget Spent</span>
-                  <span className="font-medium">${displayedAnalytics.financialStats.spent}</span>
+                  <span className="font-medium">${analyticsData.financialStats.spent}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Budget Remaining</span>
-                  <span className="font-medium">${displayedAnalytics.financialStats.remaining}</span>
+                  <span className="font-medium">${analyticsData.financialStats.remaining}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Avg. Event Cost</span>
-                  <span className="font-medium">${displayedAnalytics.financialStats.averageEventCost}</span>
+                  <span className="font-medium">${analyticsData.financialStats.averageEventCost}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Budget Utilization</span>
-                  <span className="font-medium">{Math.round((displayedAnalytics.financialStats.spent / displayedAnalytics.financialStats.totalBudget) * 100)}%</span>
+                  <span className="font-medium">{Math.round((analyticsData.financialStats.spent / analyticsData.financialStats.totalBudget) * 100)}%</span>
                 </div>
               </div>
             </Card>
@@ -381,7 +552,7 @@ const AdminDashboard = () => {
             />
           </div>
           
-          <Card className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <Card className="p-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-medium">Analytics Report</h3>
               <Button onClick={() => {
@@ -402,7 +573,7 @@ const AdminDashboard = () => {
         
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
-          <Card className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Admin Settings</h3>
             <p className="text-muted-foreground mb-6">
               Configure global settings, permissions, and platform preferences.

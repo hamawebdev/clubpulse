@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
   Users, 
@@ -12,17 +12,28 @@ import {
   Search, 
   Plus, 
   Filter, 
-  Download
+  Download,
+  Edit,
+  Trash,
+  MoreHorizontal
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import MetricCard from '@/components/dashboard/MetricCard';
 import DashboardWidget from '@/components/dashboard/DashboardWidget';
 import ChartWidget from '@/components/dashboard/ChartWidget';
-import MemberList from '@/components/dashboard/MemberList';
-import { useApi } from '@/hooks/useApi';
-import { analyticsService } from '@/services/analyticsService';
 import { 
   generateChartData, 
   generateMemberData, 
@@ -35,24 +46,8 @@ const ClubDashboard = () => {
   const { toast } = useToast();
   const tabParam = searchParams.get('tab');
   
-  // Initialize API hooks
-  const { useGet } = useApi();
-  
-  // Fetch dashboard analytics data
-  const { data: analyticsData, isLoading: isLoadingAnalytics } = useGet(
-    ['analytics', 'dashboard'],
-    analyticsService.getDashboardAnalytics,
-    {
-      enabled: tabParam === 'overview' || !tabParam,
-      // Use mock data if API fails
-      onError: () => {
-        console.log('Using mock analytics data');
-      }
-    }
-  );
-  
-  // Mock data (would be replaced by API data in production)
   const overviewData = generateChartData();
+  const memberData = generateMemberData(15);
   const eventData = generateEventData(10);
   const reportData = generateReportData(8);
   
@@ -63,15 +58,6 @@ const ClubDashboard = () => {
     searchParams.set('tab', value);
     setSearchParams(searchParams);
   };
-  
-  // Load initial notifications
-  useEffect(() => {
-    // Example of creating a notification when dashboard loads
-    toast({
-      title: "Welcome to ClubPulse",
-      description: "Your dashboard is ready",
-    });
-  }, [toast]);
   
   return (
     <div className="space-y-6">
@@ -154,22 +140,28 @@ const ClubDashboard = () => {
             <DashboardWidget title="Quick Actions">
               <div className="p-4 space-y-3">
                 <Button className="w-full justify-start" onClick={() => {
-                  searchParams.set('tab', 'members');
-                  setSearchParams(searchParams);
+                  toast({
+                    title: "Add Member",
+                    description: "Member form opened"
+                  });
                 }}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add New Member
                 </Button>
                 <Button className="w-full justify-start" onClick={() => {
-                  searchParams.set('tab', 'events');
-                  setSearchParams(searchParams);
+                  toast({
+                    title: "Create Event",
+                    description: "Event form opened"
+                  });
                 }}>
                   <CalendarPlus className="h-4 w-4 mr-2" />
                   Create New Event
                 </Button>
                 <Button className="w-full justify-start" onClick={() => {
-                  searchParams.set('tab', 'reports');
-                  setSearchParams(searchParams);
+                  toast({
+                    title: "Generate Report",
+                    description: "Report generator opened"
+                  });
                 }}>
                   <FileText className="h-4 w-4 mr-2" />
                   Generate Report
@@ -191,14 +183,7 @@ const ClubDashboard = () => {
             <DashboardWidget 
               title="Upcoming Events" 
               actions={
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    searchParams.set('tab', 'events');
-                    setSearchParams(searchParams);
-                  }}
-                >
+                <Button variant="ghost" size="sm">
                   View All
                 </Button>
               }
@@ -230,38 +215,25 @@ const ClubDashboard = () => {
             </DashboardWidget>
             
             <DashboardWidget 
-              title="Recent Reports" 
+              title="Recent Members" 
               actions={
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    searchParams.set('tab', 'reports');
-                    setSearchParams(searchParams);
-                  }}
-                >
+                <Button variant="ghost" size="sm">
                   View All
                 </Button>
               }
             >
               <div className="p-4">
                 <div className="divide-y">
-                  {reportData.slice(0, 3).map((report) => (
-                    <div key={report.id} className="py-3 flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">{report.title}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {report.submittedBy} • {report.submittedOn}
-                        </div>
+                  {memberData.slice(0, 3).map((member) => (
+                    <div key={member.id} className="py-3 flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-primary mr-3 flex-shrink-0 overflow-hidden">
+                        <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
                       </div>
-                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        report.status === 'Approved' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
-                          : report.status === 'Rejected'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                      }`}>
-                        {report.status}
+                      <div>
+                        <div className="font-medium">{member.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {member.role} • Joined {member.joinDate}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -272,30 +244,137 @@ const ClubDashboard = () => {
         </TabsContent>
         
         {/* Members Tab */}
-        <TabsContent value="members">
-          <MemberList />
-        </TabsContent>
-        
-        {/* Events Tab */}
-        <TabsContent value="events" className="space-y-4">
-          {/* Event listing functionality will be implemented here */}
+        <TabsContent value="members" className="space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 type="search"
-                placeholder="Search events..."
-                className="w-full pl-8 border border-gray-300 dark:border-gray-700 rounded-md py-2"
+                placeholder="Search members..."
+                className="w-full pl-8"
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => {
+                toast({
+                  title: "Filter Members",
+                  description: "Filter options opened"
+                });
+              }}>
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
               <Button onClick={() => {
                 toast({
-                  title: "Create Event",
+                  title: "Add New Member",
+                  description: "Member form opened"
+                });
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Member
+              </Button>
+            </div>
+          </div>
+          
+          <Card>
+            <CardContent className="p-0">
+              <div className="relative w-full overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox />
+                      </TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Join Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {memberData.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell>
+                          <Checkbox />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full overflow-hidden">
+                              <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{member.name}</div>
+                              <div className="text-xs text-muted-foreground">{member.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{member.role}</TableCell>
+                        <TableCell>
+                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            member.status === 'Active' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                              : member.status === 'Inactive'
+                                ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                          }`}>
+                            {member.status}
+                          </div>
+                        </TableCell>
+                        <TableCell>{member.joinDate}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "Edit Member",
+                                description: `Editing ${member.name}`
+                              });
+                            }}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "Delete Member",
+                                description: `Are you sure you want to delete ${member.name}?`
+                              });
+                            }}>
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Events Tab */}
+        <TabsContent value="events" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search events..."
+                className="w-full pl-8"
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={() => {
+                toast({
+                  title: "Filter Events",
+                  description: "Filter options opened"
+                });
+              }}>
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+              <Button onClick={() => {
+                toast({
+                  title: "Create New Event",
                   description: "Event form opened"
                 });
               }}>
@@ -305,36 +384,105 @@ const ClubDashboard = () => {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="p-6">
-              <h2 className="text-xl font-medium mb-4">Event Calendar</h2>
-              <p className="text-muted-foreground">
-                The event calendar is loading. In a real application, a full calendar component would be integrated here.
-              </p>
-            </div>
-          </div>
+          <Card>
+            <CardContent className="p-0">
+              <div className="relative w-full overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox />
+                      </TableHead>
+                      <TableHead>Event Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Date & Time</TableHead>
+                      <TableHead>Attendees</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {eventData.map((event) => (
+                      <TableRow key={event.id}>
+                        <TableCell>
+                          <Checkbox />
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{event.title}</div>
+                          <div className="text-xs text-muted-foreground">{event.location}</div>
+                        </TableCell>
+                        <TableCell>{event.type}</TableCell>
+                        <TableCell>
+                          <div>{event.date}</div>
+                          <div className="text-xs text-muted-foreground">{event.time}</div>
+                        </TableCell>
+                        <TableCell>{event.attendees}</TableCell>
+                        <TableCell>
+                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            event.status === 'Upcoming' 
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' 
+                              : event.status === 'Ongoing'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                : event.status === 'Completed'
+                                  ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                          }`}>
+                            {event.status}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "Edit Event",
+                                description: `Editing ${event.title}`
+                              });
+                            }}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "Delete Event",
+                                description: `Are you sure you want to delete ${event.title}?`
+                              });
+                            }}>
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         {/* Reports Tab */}
         <TabsContent value="reports" className="space-y-4">
-          {/* Reports functionality will be implemented here */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 type="search"
                 placeholder="Search reports..."
-                className="w-full pl-8 border border-gray-300 dark:border-gray-700 rounded-md py-2"
+                className="w-full pl-8"
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => {
+                toast({
+                  title: "Filter Reports",
+                  description: "Filter options opened"
+                });
+              }}>
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
               <Button onClick={() => {
                 toast({
-                  title: "Generate Report",
+                  title: "Generate New Report",
                   description: "Report form opened"
                 });
               }}>
@@ -344,21 +492,90 @@ const ClubDashboard = () => {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="p-6">
-              <h2 className="text-xl font-medium mb-4">Reports</h2>
-              <p className="text-muted-foreground">
-                Reports functionality is under development. This would display submitted reports with filtering, sorting, and export options.
-              </p>
-            </div>
-          </div>
+          <Card>
+            <CardContent className="p-0">
+              <div className="relative w-full overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox />
+                      </TableHead>
+                      <TableHead>Report Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Submitted By</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reportData.map((report) => (
+                      <TableRow key={report.id}>
+                        <TableCell>
+                          <Checkbox />
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{report.title}</div>
+                          <div className="text-xs text-muted-foreground">#{report.id}</div>
+                        </TableCell>
+                        <TableCell>{report.type}</TableCell>
+                        <TableCell>{report.submittedBy}</TableCell>
+                        <TableCell>{report.submittedOn}</TableCell>
+                        <TableCell>
+                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            report.status === 'Approved' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                              : report.status === 'Rejected'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                : report.status === 'Draft'
+                                  ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                          }`}>
+                            {report.status}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "View Report",
+                                description: `Viewing ${report.title}`
+                              });
+                            }}>
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "Download Report",
+                                description: `Downloading ${report.title}`
+                              });
+                            }}>
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => {
+                              toast({
+                                title: "More Options",
+                                description: "Options menu opened"
+                              });
+                            }}>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
-          {/* Settings form would go here */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h2 className="text-xl font-medium mb-4">Club Settings</h2>
+          <Card className="p-6">
+            <h3 className="text-lg font-medium mb-4">Club Settings</h3>
             <p className="text-muted-foreground mb-6">
               Configure your club settings, preferences, and permissions.
             </p>
@@ -372,7 +589,7 @@ const ClubDashboard = () => {
                 Save Settings
               </Button>
             </div>
-          </div>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

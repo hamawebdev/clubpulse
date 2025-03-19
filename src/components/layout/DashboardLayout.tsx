@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -18,7 +19,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import NotificationDropdown from '@/components/dashboard/NotificationDropdown';
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -91,7 +91,16 @@ const DashboardLayout = () => {
           >
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
-          <NotificationDropdown />
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => toast({
+              title: "Notifications",
+              description: "You have 3 unread notifications"
+            })}
+          >
+            <Bell className="h-5 w-5" />
+          </Button>
         </div>
       </div>
       
@@ -165,7 +174,18 @@ const DashboardLayout = () => {
           </h1>
           
           <div className="flex items-center gap-4">
-            <NotificationDropdown />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => toast({
+                title: "Notifications",
+                description: "You have 3 unread notifications"
+              })}
+              className="relative"
+            >
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+            </Button>
             
             <div className="flex items-center gap-3 border-l border-gray-200 dark:border-gray-700 pl-4">
               <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
