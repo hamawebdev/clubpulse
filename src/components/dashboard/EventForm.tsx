@@ -29,8 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Event, eventService } from "@/services/eventService";
+import { Event } from "@/services/eventService";
 import { useApi } from "@/hooks/useApi";
+import { eventService } from "@/services/eventService";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters" }),
@@ -43,8 +44,6 @@ const formSchema = z.object({
   budget: z.coerce.number().optional(),
 });
 
-type EventFormValues = z.infer<typeof formSchema>;
-
 interface EventFormProps {
   isOpen: boolean;
   onClose: () => void;
@@ -55,7 +54,7 @@ const EventForm: React.FC<EventFormProps> = ({ isOpen, onClose, event }) => {
   const { usePost, usePut } = useApi();
   const isEditing = !!event;
 
-  const form = useForm<EventFormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: event?.title || "",
@@ -69,20 +68,18 @@ const EventForm: React.FC<EventFormProps> = ({ isOpen, onClose, event }) => {
     },
   });
 
-  const createEvent = usePost<EventFormValues, Event>(
-    (data) => eventService.createEvent({...data, status: "Upcoming", attendees: 0}),
-    {
-      invalidateQueries: ["events"],
-      successMessage: "Event created successfully",
-      onSuccess: () => {
-        onClose();
-        form.reset();
-      },
-    }
-  );
+  const createEvent = usePost(eventService.createEvent, {
+    invalidateQueries: ["events"],
+    successMessage: "Event created successfully",
+    onSuccess: () => {
+      onClose();
+      form.reset();
+    },
+  });
 
-  const updateEvent = usePut<EventFormValues, Event>(
-    (data) => eventService.updateEvent(event?.id || "", data),
+  const updateEvent = usePut(
+    (data: z.infer<typeof formSchema>) =>
+      eventService.updateEvent(event?.id || "", data),
     {
       invalidateQueries: ["events"],
       successMessage: "Event updated successfully",
@@ -93,11 +90,11 @@ const EventForm: React.FC<EventFormProps> = ({ isOpen, onClose, event }) => {
     }
   );
 
-  const onSubmit = (data: EventFormValues) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (isEditing) {
       updateEvent.mutate(data);
     } else {
-      createEvent.mutate(data);
+      createEvent.mutate(data as any);
     }
   };
 

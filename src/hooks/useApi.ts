@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "./use-toast";
 
-export const useApi = <T = any, E = Error>() => {
+export const useApi = <T, E = Error>() => {
   const queryClient = useQueryClient();
   
   const handleError = (error: E) => {

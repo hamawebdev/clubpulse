@@ -28,8 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Member, memberService } from "@/services/memberService";
+import { Member } from "@/services/memberService";
 import { useApi } from "@/hooks/useApi";
+import { memberService } from "@/services/memberService";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -39,8 +40,6 @@ const formSchema = z.object({
   phone: z.string().optional(),
   department: z.string().optional(),
 });
-
-type MemberFormValues = z.infer<typeof formSchema>;
 
 interface MemberFormProps {
   isOpen: boolean;
@@ -52,7 +51,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ isOpen, onClose, member }) => {
   const { usePost, usePut } = useApi();
   const isEditing = !!member;
 
-  const form = useForm<MemberFormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: member?.name || "",
@@ -64,24 +63,18 @@ const MemberForm: React.FC<MemberFormProps> = ({ isOpen, onClose, member }) => {
     },
   });
 
-  const createMember = usePost<MemberFormValues, Member>(
-    (data) => memberService.createMember({
-      ...data, 
-      joinDate: new Date().toISOString().split('T')[0],
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random`
-    }),
-    {
-      invalidateQueries: ["members"],
-      successMessage: "Member created successfully",
-      onSuccess: () => {
-        onClose();
-        form.reset();
-      },
-    }
-  );
+  const createMember = usePost(memberService.createMember, {
+    invalidateQueries: ["members"],
+    successMessage: "Member created successfully",
+    onSuccess: () => {
+      onClose();
+      form.reset();
+    },
+  });
 
-  const updateMember = usePut<MemberFormValues, Member>(
-    (data) => memberService.updateMember(member?.id || "", data),
+  const updateMember = usePut(
+    (data: z.infer<typeof formSchema>) =>
+      memberService.updateMember(member?.id || "", data),
     {
       invalidateQueries: ["members"],
       successMessage: "Member updated successfully",
@@ -92,11 +85,11 @@ const MemberForm: React.FC<MemberFormProps> = ({ isOpen, onClose, member }) => {
     }
   );
 
-  const onSubmit = (data: MemberFormValues) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (isEditing) {
       updateMember.mutate(data);
     } else {
-      createMember.mutate(data);
+      createMember.mutate(data as any);
     }
   };
 

@@ -10,7 +10,7 @@ export interface Approval {
   requestedOn: string;
   status: string;
   relatedId?: string;
-  relatedType?: "member" | "event" | "budget" | "report";
+  relatedType?: "member" | "event" | "budget";
 }
 
 export const approvalService = {
@@ -28,7 +28,4 @@ export const approvalService = {
   
   rejectRequest: (id: string, reason: string) => 
     apiService.post(`/approvals/${id}/reject`, { reason }),
-    
-  generateReport: (report: { title: string, type: string, content: any }) => 
-    apiService.post("/reports/generate", report),
 };
