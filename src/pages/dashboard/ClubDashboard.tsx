@@ -40,7 +40,8 @@ import {
   generateReportData 
 } from '@/lib/mock-data';
 import AddMemberForm from '@/components/forms/AddMemberForm';
-import CreateEventForm from '@/components/forms/CreateEventForm';
+// TODO: Create and implement CreateEventForm component
+import CreateEventForm from '@/components/forms/CreateEventForm.tsx';
 
 const ClubDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();

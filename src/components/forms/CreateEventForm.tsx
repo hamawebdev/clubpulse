@@ -1,4 +1,4 @@
-// src/components/forms/CreateEventForm.jsx
+// src/components/forms/CreateEventForm.tsx
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
