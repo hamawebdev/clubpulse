@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { createContext, useContext, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,39 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, Mail, Lock } from "lucide-react";
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
 
+// Mock AuthContext (replace with your actual AuthContext)
+const AuthContext = createContext({
+  login: async (email: string, password: string) => {},
+});
+
+const useAuth = () => useContext(AuthContext);
+
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+  const login = async (email: string, password: string) => {
+    // Mock login logic (replace with your API call)
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (email === "test@example.com" && password === "password123") {
+          setUser({ email });
+          resolve("Login successful");
+        } else {
+          reject(new Error("Invalid email or password"));
+        }
+      }, 1000); // Simulate network delay
+    });
+  };
+
+  return (
+    <AuthContext.Provider value={{ login }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Login Component
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -19,20 +49,23 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
     try {
-      await login(
-        formData.get('email') as string,
-        formData.get('password') as string
-      );
-      
+      await login(email, password);
       const from = (location.state as any)?.from?.pathname || '/dashboard/club';
+      toast({
+        title: "Success",
+        description: "Logged in successfully!",
+        variant: "default",
+      });
       navigate(from);
     } catch (error: any) {
       toast({
         title: "Login failed",
         description: error.message || "Invalid credentials",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -107,5 +140,12 @@ const Login = () => {
     </div>
   );
 };
+
+// Wrap the Login component with AuthProvider in your app
+const App = () => (
+  <AuthProvider>
+    <Login />
+  </AuthProvider>
+);
 
 export default Login;

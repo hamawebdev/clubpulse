@@ -11,7 +11,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateEvents } from '@/hooks/events/useCreateEvents';
+import { useCreateEvent } from '@/hooks/events/useCreateEvents';
 
 interface CreateEventFormProps {
   onSuccess?: () => void;
