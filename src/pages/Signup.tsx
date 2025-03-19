@@ -19,6 +19,7 @@ const Signup = () => {
     email: '',
     password: '',
     password_confirmation: '',
+    role: 'user' // default role
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,18 +36,18 @@ const Signup = () => {
         formData.name,
         formData.email,
         formData.password,
-        formData.password,
-        'user' // default role
+        formData.password_confirmation,
+        formData.role
       );
       toast({
         title: "Success",
         description: "Account created successfully!",
       });
-      navigate('/dashboard'); // or wherever you want to redirect after signup
+      navigate('/dashboard');
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to create account",
+        description: error.response?.data?.message || "Failed to create account",
         variant: "destructive",
       });
     }
