@@ -11,13 +11,15 @@ export interface SignupData {
   name: string;
   email: string;
   password: string;
+  password_confirmation: string;
+  role: string;
 }
 
 export const authService = {
   async login(credentials: LoginCredentials) {
     const response = await axios.post(`${API_URL}/auth/login`, credentials);
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('token', response.data.access_token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
     }
     return response.data;
@@ -26,15 +28,15 @@ export const authService = {
   async signup(data: SignupData) {
     const response = await axios.post(`${API_URL}/auth/signup`, data);
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
     }
     return response.data;
   },
 
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  async logout() {
+    const response = await axios.post(`${API_URL}/auth/logout`);
+
+    return response.data;
   },
 
   getCurrentUser() {
