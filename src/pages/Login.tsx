@@ -22,20 +22,30 @@ const Login = () => {
     );
 
     if (user) {
-      // Store user info in localStorage for persistence
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      // Navigate based on user role
-      if (user.role === 'admin') {
-        navigate('/dashboard/admin');
-      } else {
-        navigate('/dashboard/club');
-      }
+      try {
+        // Store user info in localStorage for persistence
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+        });
 
-      toast({
-        title: "Success",
-        description: "Logged in successfully!",
-      });
+        // Add a small delay to ensure toast is shown before navigation
+        setTimeout(() => {
+          // Navigate based on user role
+          const path = user.role === 'admin' ? '/dashboard/admin' : '/dashboard/club';
+          navigate(path, { replace: true });
+        }, 100);
+
+      } catch (error) {
+        console.error('Navigation error:', error);
+        toast({
+          title: "Error",
+          description: "Error during navigation",
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Error",
