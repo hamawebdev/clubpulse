@@ -16,11 +16,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const user = authService.getCurrentUser();
-    if (user) {
-      setUser(user);
-      setIsAuthenticated(true);
-    }
+    // Check for authentication on component mount
+    const checkAuth = () => {
+      const user = authService.getCurrentUser();
+      const isAuth = authService.isAuthenticated();
+      
+      if (user && isAuth) {
+        setUser(user);
+        setIsAuthenticated(true);
+      }
+    };
+    
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -28,7 +35,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const response = await authService.login({ email, password });
       setUser(response.user);
       setIsAuthenticated(true);
+      return response;
     } catch (error) {
+      setUser(null);
+      setIsAuthenticated(false);
       throw error;
     }
   };
@@ -50,6 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       setUser(response.user);
       setIsAuthenticated(true);
+      return response;
     } catch (error) {
       setUser(null);
       setIsAuthenticated(false);

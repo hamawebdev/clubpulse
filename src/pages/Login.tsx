@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ const Login = () => {
     } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message,
+        description: error.message || "Invalid credentials",
         variant: "destructive"
       });
     }
@@ -56,6 +55,7 @@ const Login = () => {
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id="email" 
+                  name="email"
                   type="email" 
                   placeholder="name@example.com" 
                   className="pl-10"
@@ -75,6 +75,7 @@ const Login = () => {
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id="password" 
+                  name="password"
                   type="password" 
                   placeholder="••••••••" 
                   className="pl-10"
@@ -84,7 +85,7 @@ const Login = () => {
             </div>
             
             <div className="flex items-center space-x-2">
-              <Checkbox id="remember" />
+              <Checkbox id="remember" name="remember" />
               <Label htmlFor="remember" className="text-sm font-normal">Remember me</Label>
             </div>
           </CardContent>

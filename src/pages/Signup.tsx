@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -91,6 +90,8 @@ const Signup = () => {
                   placeholder="name@example.com" 
                   className="pl-10"
                   required
+                  value={formData.email}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -105,6 +106,8 @@ const Signup = () => {
                   placeholder="••••••••" 
                   className="pl-10"
                   required
+                  value={formData.password}
+                  onChange={handleChange}
                 />
               </div>
             </div>
