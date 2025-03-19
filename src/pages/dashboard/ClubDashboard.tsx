@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
@@ -40,6 +39,9 @@ import {
   generateEventData, 
   generateReportData 
 } from '@/lib/mock-data';
+import AddMemberForm from '@/components/forms/AddMemberForm';
+// TODO: Create and implement CreateEventForm component
+import CreateEventForm from '@/components/forms/CreateEventForm.tsx';
 
 const ClubDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,14 +53,40 @@ const ClubDashboard = () => {
   const eventData = generateEventData(10);
   const reportData = generateReportData(8);
   
-  // Set active tab based on URL param or default to 'overview'
+  const [isAddMemberFormOpen, setIsAddMemberFormOpen] = useState(false);
+  const [isCreateEventFormOpen, setIsCreateEventFormOpen] = useState(false);
+  
   const activeTab = tabParam || 'overview';
   
   const handleTabChange = (value: string) => {
     searchParams.set('tab', value);
     setSearchParams(searchParams);
   };
-  
+
+  const handleAddMemberSubmit = (data) => {
+    toast({
+      title: "Member Added",
+      description: `${data.name} has been successfully added!`,
+    });
+    setIsAddMemberFormOpen(false);
+  };
+
+  const handleAddMemberCancel = () => {
+    setIsAddMemberFormOpen(false);
+  };
+
+  const handleCreateEventSubmit = (data) => {
+    toast({
+      title: "Event Created",
+      description: `${data.title} has been successfully created!`,
+    });
+    setIsCreateEventFormOpen(false);
+  };
+
+  const handleCreateEventCancel = () => {
+    setIsCreateEventFormOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="space-y-6">
@@ -139,21 +167,11 @@ const ClubDashboard = () => {
             
             <DashboardWidget title="Quick Actions">
               <div className="p-4 space-y-3">
-                <Button className="w-full justify-start" onClick={() => {
-                  toast({
-                    title: "Add Member",
-                    description: "Member form opened"
-                  });
-                }}>
+                <Button className="w-full justify-start" onClick={() => setIsAddMemberFormOpen(true)}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add New Member
                 </Button>
-                <Button className="w-full justify-start" onClick={() => {
-                  toast({
-                    title: "Create Event",
-                    description: "Event form opened"
-                  });
-                }}>
+                <Button className="w-full justify-start" onClick={() => setIsCreateEventFormOpen(true)}>
                   <CalendarPlus className="h-4 w-4 mr-2" />
                   Create New Event
                 </Button>
@@ -264,12 +282,7 @@ const ClubDashboard = () => {
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Add New Member",
-                  description: "Member form opened"
-                });
-              }}>
+              <Button onClick={() => setIsAddMemberFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Member
               </Button>
@@ -349,6 +362,18 @@ const ClubDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {isAddMemberFormOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
+                <h2 className="text-xl font-semibold mb-4">Add New Member</h2>
+                <AddMemberForm 
+                  onSubmit={handleAddMemberSubmit} 
+                  onCancel={handleAddMemberCancel} 
+                />
+              </div>
+            </div>
+          )}
         </TabsContent>
         
         {/* Events Tab */}
@@ -372,12 +397,7 @@ const ClubDashboard = () => {
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Create New Event",
-                  description: "Event form opened"
-                });
-              }}>
+              <Button onClick={() => setIsCreateEventFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Event
               </Button>
@@ -457,6 +477,18 @@ const ClubDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {isCreateEventFormOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
+                <h2 className="text-xl font-semibold mb-4">Create New Event</h2>
+                <CreateEventForm 
+                  onSubmit={handleCreateEventSubmit}
+                  onCancel={handleCreateEventCancel}
+                />
+              </div>
+            </div>
+          )}
         </TabsContent>
         
         {/* Reports Tab */}

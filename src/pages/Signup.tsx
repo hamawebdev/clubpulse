@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,17 +8,48 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Mail, Lock, User } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Signup = () => {
+  const { signup } = useAuth();
   const { toast } = useToast();
-  
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // This would be replaced with actual registration logic
-    toast({
-      title: "Signup demo",
-      description: "This is a demo. Registration would be implemented with a backend service.",
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
     });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await signup(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.password,
+        'user' // default role
+      );
+      toast({
+        title: "Success",
+        description: "Account created successfully!",
+      });
+      navigate('/dashboard'); // or wherever you want to redirect after signup
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create account",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -43,6 +74,8 @@ const Signup = () => {
                   placeholder="John Doe" 
                   className="pl-10"
                   required
+                  value={formData.name}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -71,6 +104,22 @@ const Signup = () => {
                   placeholder="••••••••" 
                   className="pl-10"
                   required
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password_confirmation">Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  id="password_confirmation" 
+                  type="password" 
+                  placeholder="••••••••" 
+                  className="pl-10"
+                  required
+                  value={formData.password_confirmation}
+                  onChange={handleChange}
                 />
               </div>
             </div>

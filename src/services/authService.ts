@@ -7,14 +7,6 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface SignupData {
-  name: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
-  role: string;
-}
-
 export const authService = {
   async login(credentials: LoginCredentials) {
     const response = await axios.post(`${API_URL}/auth/login`, credentials);
@@ -25,13 +17,32 @@ export const authService = {
     return response.data;
   },
 
-  async signup(data: SignupData) {
-    const response = await axios.post(`${API_URL}/auth/signup`, data);
-    if (response.data.token) {
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+  signup: async (userData: {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    role: string;
+  }) => {
+    const response = await fetch('/api/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to sign up');
     }
-    return response.data;
+
+    const data = await response.json();
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    return data;
   },
+};
 
   async logout() {
     const response = await axios.post(`${API_URL}/auth/logout`);
