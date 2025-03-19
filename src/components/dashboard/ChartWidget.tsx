@@ -57,100 +57,113 @@ const ChartWidget = ({
       return acc;
     }, {} as ChartConfig);
   
+  // Create chart based on type
+  const renderChart = () => {
+    if (type === 'line') {
+      return (
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey={xAxisKey} 
+            fontSize={12}
+            tickLine={false}
+          />
+          <YAxis 
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}`}
+          />
+          <ChartTooltip 
+            content={<ChartTooltipContent />} 
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+          {dataKeys.map((key) => (
+            <Line
+              key={key}
+              type="monotone"
+              dataKey={key}
+              stroke={`var(--color-${key})`}
+              activeDot={{ r: 8 }}
+              strokeWidth={2}
+            />
+          ))}
+        </LineChart>
+      );
+    }
+    
+    if (type === 'bar') {
+      return (
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey={xAxisKey} 
+            fontSize={12}
+            tickLine={false}
+          />
+          <YAxis 
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}`}
+          />
+          <ChartTooltip 
+            content={<ChartTooltipContent />} 
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+          {dataKeys.map((key) => (
+            <Bar
+              key={key}
+              dataKey={key}
+              fill={`var(--color-${key})`}
+              radius={[4, 4, 0, 0]}
+            />
+          ))}
+        </BarChart>
+      );
+    }
+    
+    if (type === 'area') {
+      return (
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey={xAxisKey} 
+            fontSize={12}
+            tickLine={false}
+          />
+          <YAxis 
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}`}
+          />
+          <ChartTooltip 
+            content={<ChartTooltipContent />} 
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+          {dataKeys.map((key) => (
+            <Area
+              key={key}
+              type="monotone"
+              dataKey={key}
+              stroke={`var(--color-${key})`}
+              fill={`var(--color-${key})`}
+              fillOpacity={0.2}
+            />
+          ))}
+        </LineChart>
+      );
+    }
+    
+    return null;
+  };
+  
   return (
     <DashboardWidget title={title} className={className} actions={actions}>
       <div className="w-full p-4" style={{ height }}>
         <ChartContainer config={chartConfig}>
-          {type === 'line' && (
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey={xAxisKey} 
-                fontSize={12}
-                tickLine={false}
-              />
-              <YAxis 
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `${value}`}
-              />
-              <ChartTooltip 
-                content={<ChartTooltipContent />} 
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              {dataKeys.map((key) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke={`var(--color-${key})`}
-                  activeDot={{ r: 8 }}
-                  strokeWidth={2}
-                />
-              ))}
-            </LineChart>
-          )}
-          
-          {type === 'bar' && (
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey={xAxisKey} 
-                fontSize={12}
-                tickLine={false}
-              />
-              <YAxis 
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `${value}`}
-              />
-              <ChartTooltip 
-                content={<ChartTooltipContent />} 
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              {dataKeys.map((key) => (
-                <Bar
-                  key={key}
-                  dataKey={key}
-                  fill={`var(--color-${key})`}
-                  radius={[4, 4, 0, 0]}
-                />
-              ))}
-            </BarChart>
-          )}
-          
-          {type === 'area' && (
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey={xAxisKey} 
-                fontSize={12}
-                tickLine={false}
-              />
-              <YAxis 
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `${value}`}
-              />
-              <ChartTooltip 
-                content={<ChartTooltipContent />} 
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              {dataKeys.map((key) => (
-                <Area
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke={`var(--color-${key})`}
-                  fill={`var(--color-${key})`}
-                  fillOpacity={0.2}
-                />
-              ))}
-            </LineChart>
-          )}
+          {renderChart()}
         </ChartContainer>
       </div>
     </DashboardWidget>
