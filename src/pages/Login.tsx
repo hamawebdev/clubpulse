@@ -1,21 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
-// Mock login function (replace with your real authentication)
-const login = async (email, password) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (email === "user@example.com" && password === "123") {
-        resolve("Login successful");
-      } else {
-        reject(new Error("Wrong email or password"));
-      }
-    }, 500); // Simulate a quick delay
-  });
-};
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,11 +14,25 @@ const Login = () => {
     const password = e.target.password.value;
 
     try {
-      await login(email, password);
-      alert("Logged in!");
-      navigate('/dashboard/club'); // Updated redirect path to club dashboard
+      const response = await login(email, password);
+      
+      // Navigate based on user role
+      if (response.user.role === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
+        navigate('/dashboard/club');
+      }
+
+      toast({
+        title: "Success",
+        description: "Logged in successfully!",
+      });
     } catch (error) {
-      alert(error.message);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 

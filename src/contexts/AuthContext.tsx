@@ -1,10 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '@/services/authService';
+
+// Static credentials for demo
+const STATIC_USERS = {
+  admin: {
+    email: 'admin@example.com',
+    password: 'admin123',
+    role: 'admin',
+    name: 'Admin User'
+  },
+  club: {
+    email: 'club@example.com',
+    password: 'club123',
+    role: 'club',
+    name: 'Club Manager'
+  }
+};
 
 interface AuthContextType {
   user: any;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   signup: (name: string, email: string, password: string, password_confirmation: string, role: string) => Promise<void>;
   logout: () => void;
 }
@@ -16,30 +31,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for authentication on component mount
-    const checkAuth = () => {
-      const user = authService.getCurrentUser();
-      const isAuth = authService.isAuthenticated();
-      
-      if (user && isAuth) {
-        setUser(user);
-        setIsAuthenticated(true);
-      }
-    };
-    
-    checkAuth();
+    // Check for stored authentication
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+    }
   }, []);
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await authService.login({ email, password });
-      setUser(response.user);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Check static credentials
+    const adminUser = STATIC_USERS.admin;
+    const clubUser = STATIC_USERS.club;
+
+    let matchedUser = null;
+
+    if (email === adminUser.email && password === adminUser.password) {
+      matchedUser = adminUser;
+    } else if (email === clubUser.email && password === clubUser.password) {
+      matchedUser = clubUser;
+    }
+
+    if (matchedUser) {
+      setUser(matchedUser);
       setIsAuthenticated(true);
-      return response;
-    } catch (error) {
-      setUser(null);
-      setIsAuthenticated(false);
-      throw error;
+      localStorage.setItem('user', JSON.stringify(matchedUser));
+      return { user: matchedUser };
+    } else {
+      throw new Error('Invalid email or password');
     }
   };
 
@@ -50,28 +72,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password_confirmation: string,
     role: string
   ) => {
-    try {
-      const response = await authService.signup({
-        name,
-        email,
-        password,
-        password_confirmation,
-        role
-      });
-      setUser(response.user);
-      setIsAuthenticated(true);
-      return response;
-    } catch (error) {
-      setUser(null);
-      setIsAuthenticated(false);
-      throw error;
-    }
+    throw new Error('Signup is not implemented in demo mode');
   };
 
   const logout = () => {
-    authService.logout();
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem('user');
   };
 
   return (
