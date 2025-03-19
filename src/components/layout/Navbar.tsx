@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +28,9 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <a href="/" className="text-primary font-display text-2xl font-bold">
+          <Link to="/" className="text-primary font-display text-2xl font-bold">
             ClubPulse
-          </a>
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
@@ -45,11 +46,11 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" className="hidden md:inline-flex">
-            Log In
+          <Button variant="ghost" className="hidden md:inline-flex" asChild>
+            <Link to="/login">Log In</Link>
           </Button>
-          <Button className="bg-primary hover:bg-primary/90 transition-colors">
-            Get Started
+          <Button className="bg-primary hover:bg-primary/90 transition-colors" asChild>
+            <Link to="/signup">Get Started</Link>
           </Button>
         </div>
       </div>
