@@ -1,29 +1,34 @@
 // clubService.ts
-import axiosInstance from '../lib/axios';
+import axios from '../lib/axios';
 
+// Function to get clubs
+export const getClubs = async (): Promise<any> => {
+  try {
+    const response = await axios.get('/clubs', {
+      headers: { Accept: 'application/json' },
+    });
+    return response;
+  } catch (error) {
+    console.error('Error fetching clubs:', error);
+    throw error;
+  }
+};
+
+// Interface for create club payload
 export interface CreateClubPayload {
   name: string;
   university_id: number;
 }
 
-export const createClub = async (
-  payload: CreateClubPayload
-): Promise<any> => {
+// Function to create a new club
+export const createClub = async (data: CreateClubPayload): Promise<any> => {
   try {
-    const response = await axiosInstance.post('/clubs', payload, {
-      headers: {
-        Accept: 'application/json',
-      },
+    const response = await axios.post('/clubs', data, {
+      headers: { Accept: 'application/json' },
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error('Error creating club:', error);
     throw error;
   }
 };
-
-// Example usage:
-// const newClub: CreateClubPayload = { name: 'Club Name', university_id: 1 };
-// createClub(newClub)
-//   .then(data => console.log('Club created:', data))
-//   .catch(error => console.error('Creation failed:', error));
