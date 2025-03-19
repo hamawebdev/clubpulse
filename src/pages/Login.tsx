@@ -1,11 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+
+// Static credentials for testing
+const VALID_CREDENTIALS = [
+  { email: 'admin@example.com', password: 'admin123', role: 'admin' },
+  { email: 'club@example.com', password: 'club123', role: 'club' }
+];
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e) => {
@@ -13,11 +17,16 @@ const Login = () => {
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    try {
-      const response = await login(email, password);
+    const user = VALID_CREDENTIALS.find(
+      cred => cred.email === email && cred.password === password
+    );
+
+    if (user) {
+      // Store user info in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(user));
       
       // Navigate based on user role
-      if (response.user.role === 'admin') {
+      if (user.role === 'admin') {
         navigate('/dashboard/admin');
       } else {
         navigate('/dashboard/club');
@@ -27,10 +36,10 @@ const Login = () => {
         title: "Success",
         description: "Logged in successfully!",
       });
-    } catch (error) {
+    } else {
       toast({
         title: "Error",
-        description: error.message,
+        description: "Invalid email or password",
         variant: "destructive",
       });
     }
