@@ -40,6 +40,7 @@ import {
   generateReportData 
 } from '@/lib/mock-data';
 import AddMemberForm from '@/components/forms/AddMemberForm';
+import CreateEventForm from '@/components/forms/CreateEventForm';
 
 const ClubDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,10 +52,9 @@ const ClubDashboard = () => {
   const eventData = generateEventData(10);
   const reportData = generateReportData(8);
   
-  // State to control AddMemberForm visibility
   const [isAddMemberFormOpen, setIsAddMemberFormOpen] = useState(false);
+  const [isCreateEventFormOpen, setIsCreateEventFormOpen] = useState(false);
   
-  // Set active tab based on URL param or default to 'overview'
   const activeTab = tabParam || 'overview';
   
   const handleTabChange = (value: string) => {
@@ -62,18 +62,28 @@ const ClubDashboard = () => {
     setSearchParams(searchParams);
   };
 
-  // Handle form submission
   const handleAddMemberSubmit = (data) => {
     toast({
       title: "Member Added",
       description: `${data.name} has been successfully added!`,
     });
-    setIsAddMemberFormOpen(false); // Close the form after submission
+    setIsAddMemberFormOpen(false);
   };
 
-  // Handle form cancellation
   const handleAddMemberCancel = () => {
     setIsAddMemberFormOpen(false);
+  };
+
+  const handleCreateEventSubmit = (data) => {
+    toast({
+      title: "Event Created",
+      description: `${data.title} has been successfully created!`,
+    });
+    setIsCreateEventFormOpen(false);
+  };
+
+  const handleCreateEventCancel = () => {
+    setIsCreateEventFormOpen(false);
   };
 
   return (
@@ -160,12 +170,7 @@ const ClubDashboard = () => {
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add New Member
                 </Button>
-                <Button className="w-full justify-start" onClick={() => {
-                  toast({
-                    title: "Create Event",
-                    description: "Event form opened"
-                  });
-                }}>
+                <Button className="w-full justify-start" onClick={() => setIsCreateEventFormOpen(true)}>
                   <CalendarPlus className="h-4 w-4 mr-2" />
                   Create New Event
                 </Button>
@@ -357,7 +362,6 @@ const ClubDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Add Member Form Modal */}
           {isAddMemberFormOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
@@ -392,12 +396,7 @@ const ClubDashboard = () => {
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Create New Event",
-                  description: "Event form opened"
-                });
-              }}>
+              <Button onClick={() => setIsCreateEventFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Event
               </Button>
@@ -477,6 +476,18 @@ const ClubDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {isCreateEventFormOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
+                <h2 className="text-xl font-semibold mb-4">Create New Event</h2>
+                <CreateEventForm 
+                  onSubmit={handleCreateEventSubmit}
+                  onCancel={handleCreateEventCancel}
+                />
+              </div>
+            </div>
+          )}
         </TabsContent>
         
         {/* Reports Tab */}
