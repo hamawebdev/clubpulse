@@ -8,17 +8,34 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, Mail, Lock } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
-  
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // This would be replaced with actual authentication logic
-    toast({
-      title: "Login demo",
-      description: "This is a demo. Authentication would be implemented with a backend service.",
-    });
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      await login(
+        formData.get('email') as string,
+        formData.get('password') as string
+      );
+      
+      const from = (location.state as any)?.from?.pathname || '/dashboard/club';
+      navigate(from);
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   return (
