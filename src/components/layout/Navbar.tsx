@@ -46,9 +46,7 @@ const Navbar = () => {
             Testimonials
           </a>
           <div className="relative group">
-            <span className="text-foreground/90 hover:text-primary transition-colors duration-200 cursor-pointer flex items-center">
-              Dashboards
-            </span>
+          
             <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
               <div className="py-1">
                 <Link 
